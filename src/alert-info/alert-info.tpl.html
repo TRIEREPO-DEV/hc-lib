@@ -1,0 +1,78 @@
+<div class="page-content hidden-print ">
+	<h2 class="page-title hidden-print">Alerts Info</h2>
+	<div class="bg-color-linear row no-padding" > 
+		<div class="grid-md-12 card row">
+			<div class="grid-md-2">
+				<label for="filter"><b>Search</b></label>
+				<select id="filter" class="form-field grid-md-12" ng-model="searchObj.filter" 
+					ng-options="filter.flag as filter.key for filter in filters" name="filter">
+						<option value="">All</option>
+					</select>	
+			</div>
+			<div class="grid-md-2">
+				<label class="grid-md-12" for="batch"><strong>Batch</strong></label>
+				<input type="text" class="form-field grid-md-12"  placeholder="Batch No" ng-model="searchObj.batch">
+			</div>
+			<div class="grid-md-2">
+				<label class="grid-md-12" for="medicine"><strong>Medicine</strong></label>
+				<auto-suggest class="grid-md-12 no-padding" 
+	                 		template="'<span class=\'grid-md-6\'>{{suggestion.name}}</span> -<span style=\'color:dodgerblue;\'>{{suggestion.batch}}</span> - <span style=\'color:red;\'>{{suggestion.expiryMonth}}/{{suggestion.expiryYear}}--</span> Avl-<span></span><span style=\'color:dodgerblue;\'>{{suggestion.available}}</span>'"
+	                  		on-select="setMedicineName(selected)" clearable="true" search-key="name" suggestions="medicines" 
+	                 		display-key="name" options="{inputClass: 'form-field grid-md-12',placeHolder:'Medicine Name',fieldName:'name',isRequired:'false'}" 
+	                 		output-model="chosenMedicine">
+	           	</auto-suggest>
+			</div>
+			<div class="grid-md-2" ng-if="searchObj.filter == 'isExpired'">
+				<label class="grid-md-12" for="month"><strong>Month</strong></label>
+				<input type="number" minlength="1" max="12" min="1" maxlength="2" class="form-field grid-md-12"  placeholder="MM" ng-model="searchObj.expiryMonth">
+			</div>
+			<div class="grid-md-1" ng-if="searchObj.filter == 'isExpired'">
+				<label class="grid-md-12" for="year"><strong>Year</strong></label>
+				<input type="number" minlength="2" maxlength="4" class="form-field grid-md-12"  placeholder="YYYY" ng-model="searchObj.expiryYear">
+			</div>
+			<div class="grid-md-3">
+				<button class="btn btn-blue btn-md mar-top-17" ng-click="getAlertMedicines()">Filter</button>
+			</div>
+		</div>
+	</div>
+	<div class="card grid-md-12" >
+		<div class="grid-md-12">
+			<div class="card-full-height-80 " ng-if="alertMedicines.length">
+				<div class="row border-bottom-2 text-bold">
+					<div class="grid-md-pnt5 text-center">S.No</div>
+					<div class="grid-md-2">Medicine</div>
+					<div class="grid-md-3">Drug Content</div>
+					<div class="grid-md-1">Expiry</div>
+					<div class="grid-md-1">Batch</div>
+					<div class="grid-md-1">Avl.</div>
+					<div class="grid-md-1pnt5 text-center">Min Count</div>
+					<div class="grid-md-1pnt5 text-center">Max Count</div>
+				</div>
+				<div class="card hidden-print card-full-height-66 vertical-scroll border-around" scroller-api="scrollerApi" when-scrolled="fetchMoreAlertMedicines()" ng-if="alertMedicines.length">
+					<div class="row border-around medicine-hover" ng-repeat="medicine in alertMedicines" >
+						<div class="grid-md-pnt5 text-center">{{$index+1}}</div>
+						<div class="grid-md-2">{{medicine.name}}</div>
+						<div class="grid-md-3">{{medicine.drugContent}}</div>
+						<div class="grid-md-1">{{medicine.expiryMonth}}/{{medicine.expiryYear}}</div>
+						<div class="grid-md-1">{{medicine.batch}}</div>
+						<div class="grid-md-1">{{medicine.available}}</div>
+						<div class="grid-md-1pnt5 text-center">{{medicine.minCount}}<br>
+							<span ng-show="medicine.available < medicine.minCount" class="color-violet font-14"><i class="fa fa-bell-o mar-right-5" aria-hidden="true"></i>
+								<strong>medicine count is Low</strong>
+							</span>
+						</div>
+						<div class="grid-md-1pnt5 text-center">{{medicine.maxCount}}<br>
+							<span ng-show="medicine.available >= medicine.maxCount" class="color-violet font-14"><i class="fa fa-bell-o mar-right-5" aria-hidden="true"></i>
+								<strong>medicine count is High</strong>
+							</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="overlay absolute" ng-class="{'show':formLoader}"></div>
+<div class="form-loader" ng-class="{'show':formLoader}">
+	<i class="fa fa-spinner fa-spin"></i>
+</div>
