@@ -82,7 +82,14 @@ angular.module("hcLib").directive("opPatientForm", function() {
         
         function saveOrUpdateOPPatient() {
             opPatientService.save($scope.opPatient).then(function(response){
-                $state.go('opPatientSearch',{opId: $scope.op.id});
+                if($state.current.name == 'opPatientSearch'){
+                    if(typeof $scope.onSave === 'function') {
+                        $scope.onSave();
+                    }
+                    // $state.reload();
+                }else{
+                    $state.go('opPatientSearch',{opId: $scope.op.id});
+                }
             });		
         }
         function onSelectPatient(patient){
@@ -115,9 +122,15 @@ angular.module("hcLib").directive("opPatientForm", function() {
                     }
                 }
                 opPatientService.getOpPatientsListByOptions({opType:{id:1},isReviewOp:false,patient:{id:selectedPatient.id}}).then(function(res) {
-                	if(((new Date()-new Date(res[0].createdOn))/ 1000 / 60 / 60 / 24).toFixed(0)<=15){
-                		$scope.opPatient.isReviewOp = true;
-                	}
+                    if(res.length){
+                        if(((new Date()-new Date(res[0].createdOn))/ 1000 / 60 / 60 / 24).toFixed(0)<=15){
+                            $scope.opPatient.isReviewOp = true;
+                        }else{
+                            $scope.opPatient.isReviewOp = false;
+                        }
+                    }else{
+                        $scope.opPatient.isReviewOp = false;
+                    }
                 });
                 if (!$scope.opPatientIsExist) {
                     $scope.setOPCost();
@@ -164,7 +177,8 @@ angular.module("hcLib").directive("opPatientForm", function() {
 		restrict : 'E',
 		scope : {
             op: '=',
-            opId: '='
+            opId: '=',
+            onSave:'&'
 		},
 		controller : controller,
 		templateUrl : "src/op-patient-form/op-patient-form.tpl.html"
